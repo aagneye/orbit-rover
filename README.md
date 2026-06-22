@@ -4,12 +4,55 @@ Monorepo for **Orbit Detective** — an AI-powered GitLab pipeline root-cause an
 
 ## Repositories
 
-| Remote | URL | Branch |
-|--------|-----|--------|
-| GitHub | https://github.com/aagneye/orbit-rover | `master` |
-| GitLab | https://gitlab.com/aagneye-group/orbit-rover | `main`, `orbit-detective` |
+| Remote | URL | Branch with your code |
+|--------|-----|------------------------|
+| **GitHub** | https://github.com/aagneye/orbit-rover | `master` (65 commits) |
+| **GitLab** | https://gitlab.com/aagneye-group/orbit-rover | `main` or `orbit-detective` (65 commits) |
 
-> **Note:** GitLab `master` is protected (Node.js template). Orbit Detective code lives on `main` and `orbit-detective`. Merge via MR or set `main` as default branch in GitLab Settings.
+### Why GitLab `master` looks empty
+
+You are viewing the **`master`** branch on GitLab. That branch still has only the old **Node.js Express template** (1 commit). All Orbit Detective code was pushed to **`main`** and **`orbit-detective`** because `master` is **protected** and rejects force-push.
+
+**To see your code on GitLab now:** open the branch dropdown (bottom-left) and switch to **`main`**:
+https://gitlab.com/aagneye-group/orbit-rover/-/tree/main
+
+Or use the green banner **"Create merge request"** to merge `orbit-detective` → `master`.
+
+### Git remotes (configured)
+
+```
+github  → https://github.com/aagneye/orbit-rover.git
+gitlab  → https://gitlab.com/aagneye-group/orbit-rover.git
+```
+
+### How to push (same code, both remotes)
+
+```bash
+# Push to GitHub master
+git push github master
+
+# Push to GitLab (use main until master is unprotected)
+git push gitlab master:main
+
+# Optional: keep orbit-detective in sync
+git push gitlab master:orbit-detective
+```
+
+Once GitLab `master` is unprotected (Settings → Repository → Protected branches), you can use:
+
+```bash
+git push gitlab master
+```
+
+### Authentication
+
+GitLab shows an SSO warning — you need a **Personal Access Token** (scope: `write_repository`) instead of a password:
+
+1. GitLab → **Preferences → Access Tokens**
+2. Create token, copy it
+3. When `git push` asks for password, paste the token
+
+GitHub: use a **Personal Access Token** or `gh auth login`.
 
 ## High-Level Architecture
 
