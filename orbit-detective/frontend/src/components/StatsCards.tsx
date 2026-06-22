@@ -7,10 +7,10 @@ interface Props {
 
 export function StatsCards({ stats }: Props) {
   const cards = [
-    { label: "Total Analyses", value: stats.total.toString(), icon: "📊" },
+    { label: "Analyses Run", value: stats.total.toString(), icon: "📊" },
+    { label: "Avg Time Saved", value: stats.avg_time_saved || "—", icon: "⏱️" },
+    { label: "Most Common Failure", value: stats.most_common_failure?.slice(0, 40) || "—", icon: "🔥", small: true },
     { label: "Avg Confidence", value: stats.total ? formatConfidence(stats.avg_confidence) : "—", icon: "🎯" },
-    { label: "Projects", value: stats.projects.length.toString(), icon: "📦" },
-    { label: "LLM Mode", value: "Mock / Live", icon: "🤖" },
   ];
 
   return (
@@ -18,7 +18,9 @@ export function StatsCards({ stats }: Props) {
       {cards.map((card) => (
         <div key={card.label} className="card-glow rounded-xl bg-slate-900/60 p-5">
           <div className="text-2xl mb-2">{card.icon}</div>
-          <div className="text-2xl font-bold text-slate-100">{card.value}</div>
+          <div className={`font-bold text-slate-100 ${card.small ? "text-sm leading-snug" : "text-2xl"}`}>
+            {card.value}
+          </div>
           <div className="text-sm text-slate-400 mt-1">{card.label}</div>
         </div>
       ))}

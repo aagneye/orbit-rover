@@ -39,6 +39,28 @@ export interface Stats {
   total: number;
   avg_confidence: number;
   projects: string[];
+  avg_time_saved?: string;
+  avg_time_saved_minutes?: number;
+  most_common_failure?: string;
+  top_affected_teams?: string[];
+  recent_failures?: Array<{
+    id: string;
+    label: string;
+    project_path: string;
+    cause: string;
+    confidence: number;
+    mr_url: string | null;
+    pipeline_url: string | null;
+  }>;
+  latest_analysis?: {
+    id: string;
+    cause: string;
+    confidence: number;
+    summary: string;
+    mr_url: string | null;
+    pipeline_url: string | null;
+    gitlab_link: string | null;
+  } | null;
 }
 
 export async function fetchAnalyses(): Promise<AnalysisSummary[]> {
@@ -55,7 +77,11 @@ export async function fetchAnalysis(id: string): Promise<AnalysisDetail> {
 
 export async function fetchStats(): Promise<Stats> {
   const res = await fetch(`${API_URL}/api/stats`, { next: { revalidate: 10 } });
-  if (!res.ok) return { total: 0, avg_confidence: 0, projects: [] };
+  if (!res.ok) return {
+    total: 0, avg_confidence: 0, projects: [],
+    avg_time_saved: "0m", most_common_failure: "—",
+    top_affected_teams: [], latest_analysis: null,
+  };
   return res.json();
 }
 

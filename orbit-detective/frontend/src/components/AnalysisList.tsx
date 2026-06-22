@@ -11,45 +11,50 @@ export function AnalysisList({ analyses }: Props) {
     return (
       <div className="card-glow rounded-xl bg-slate-900/60 p-12 text-center">
         <div className="text-4xl mb-4">🛰️</div>
-        <h3 className="text-lg font-semibold text-slate-200">No analyses yet</h3>
+        <h3 className="text-lg font-semibold text-slate-200">No pipeline failures yet</h3>
         <p className="text-slate-400 mt-2 max-w-md mx-auto">
-          Trigger a pipeline failure webhook or run the demo script to see Orbit Detective in action.
+          Run <code className="text-orbit-400">scripts/demo.ps1</code> to simulate a failure.
+          In production, Orbit Detective comments directly on GitLab merge requests.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {analyses.map((a) => (
-        <Link
-          key={a.id}
-          href={`/analyses/${a.id}`}
-          className="block card-glow rounded-xl bg-slate-900/60 p-5 hover:bg-slate-800/60 transition-colors group"
-        >
-          <div className="flex items-start justify-between gap-4">
+    <div className="space-y-2">
+      {analyses.map((a) => {
+        const service = a.project_path.split("/").pop()?.replace(/-/g, " ") || a.project_path;
+        return (
+          <div
+            key={a.id}
+            className="card-glow rounded-xl bg-slate-900/60 p-4 flex items-center justify-between gap-4"
+          >
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-sm text-slate-400 mb-1">
-                <span className="font-mono">{a.project_path}</span>
-                <span>·</span>
-                <span>pipeline #{a.pipeline_iid}</span>
-                <span>·</span>
-                <span className="text-red-400">{a.status}</span>
-              </div>
-              <h3 className="font-semibold text-slate-100 group-hover:text-orbit-500 transition-colors truncate">
-                {a.cause}
-              </h3>
-              <p className="text-sm text-slate-400 mt-1 line-clamp-2">{a.summary}</p>
+              <div className="font-medium text-slate-200 capitalize">{service} Pipeline</div>
+              <div className="text-sm text-slate-500 truncate">{a.cause}</div>
             </div>
-            <div className="text-right shrink-0">
-              <div className={`text-2xl font-bold ${confidenceClass(a.confidence)}`}>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className={`text-sm font-bold ${confidenceClass(a.confidence)}`}>
                 {formatConfidence(a.confidence)}
-              </div>
-              <div className="text-xs text-slate-500 mt-1">{a.branch}</div>
+              </span>
+              {a.mr_url ? (
+                <a
+                  href={a.mr_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-orbit-400 hover:text-orbit-300"
+                >
+                  GitLab →
+                </a>
+              ) : (
+                <Link href={`/analyses/${a.id}`} className="text-xs text-slate-400 hover:text-orbit-400">
+                  Details →
+                </Link>
+              )}
             </div>
           </div>
-        </Link>
-      ))}
+        );
+      })}
     </div>
   );
 }
