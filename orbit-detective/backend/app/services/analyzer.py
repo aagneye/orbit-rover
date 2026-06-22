@@ -60,11 +60,20 @@ class PipelineAnalyzer:
 
     merge_request = payload.merge_request
     if merge_request and merge_request.iid:
-      merge_request = await self.gitlab.get_merge_request(project_id, merge_request.iid)
+      try:
+        if self.settings.gitlab_token:
+          merge_request = await self.gitlab.get_merge_request(project_id, merge_request.iid)
+      except Exception as exc:
+        logger.warning("Could not fetch MR from GitLab API, using webhook data: %s", exc)
     elif ref:
       merge_request = await self.gitlab.find_mr_for_branch(project_id, ref)
 
-    recent_commits = await self.gitlab.get_recent_commits(project_id, ref)
+    recent_commits = []
+    try:
+      if self.settings.gitlab_token:
+        recent_commits = await self.gitlab.get_recent_commits(project_id, ref)
+    except Exception as exc:
+      logger.warning("Could not fetch commits from GitLab API: %s", exc)
 
     service_name = payload.project.path_with_namespace.split("/")[-1]
     orbit_context = await self.orbit.investigate_pipeline_failure(
