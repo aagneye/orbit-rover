@@ -100,11 +100,19 @@ class GitLabClient:
   async def post_merge_request_note(self, project_id: int, mr_iid: int, body: str) -> dict[str, Any]:
     url = f"{self.base_url}/api/v4/projects/{project_id}/merge_requests/{mr_iid}/notes"
     async with httpx.AsyncClient(timeout=30.0) as client:
-      response = await client.post(
-        url,
-        headers=self._headers,
-        json={"body": body},
-      )
+      response = await client.post(url, headers=self._headers, json={"body": body})
+      response.raise_for_status()
+      return response.json()
+
+  async def create_issue(
+    self, project_id: int, title: str, description: str, labels: list[str] | None = None
+  ) -> dict[str, Any]:
+    url = f"{self.base_url}/api/v4/projects/{project_id}/issues"
+    payload: dict[str, Any] = {"title": title, "description": description}
+    if labels:
+      payload["labels"] = ",".join(labels)
+    async with httpx.AsyncClient(timeout=30.0) as client:
+      response = await client.post(url, headers=self._headers, json=payload)
       response.raise_for_status()
       return response.json()
 

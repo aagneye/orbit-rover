@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     max_log_lines: int = 500
     recent_commits_count: int = 10
     cors_origins: str = "http://localhost:3000"
+    dashboard_base_url: str = "http://localhost:3000"
+    public_api_url: str = "http://localhost:8000"
 
 
 @lru_cache

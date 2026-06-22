@@ -2,10 +2,19 @@ from app.models.schemas import AnalysisReport, InvestigationContext
 from app.utils.helpers import confidence_label
 
 
-def format_mr_comment(report: AnalysisReport, context: InvestigationContext) -> str:
+def format_mr_comment(
+  report: AnalysisReport,
+  context: InvestigationContext,
+  analysis_id: str,
+  dashboard_url: str,
+  api_url: str,
+) -> str:
   project = context.webhook.project.path_with_namespace
   pipeline = context.webhook.object_attributes
   failed_jobs = ", ".join(j.name for j in context.failed_jobs) or "unknown"
+
+  create_issue_link = f"{api_url}/api/analyses/{analysis_id}/create-issue"
+  view_details_link = f"{dashboard_url}/analyses/{analysis_id}"
 
   evidence_lines = "\n".join(
     f"- **{e.source}**: {e.summary}" + (f" — _{e.detail}_" if e.detail and len(e.detail) < 120 else "")
@@ -39,7 +48,16 @@ def format_mr_comment(report: AnalysisReport, context: InvestigationContext) -> 
 
   return f"""## 🔍 Orbit Detective — Pipeline Failure Analysis
 
-> Automated root-cause analysis for pipeline [#{pipeline.iid}]({pipeline.url or '#'}) on `{pipeline.ref}`
+> Pipeline [#{pipeline.iid}]({pipeline.url or '#'}) failed on `{pipeline.ref}`. Root cause identified automatically.
+
+### ⚡ Quick Actions
+
+| Action | Link |
+|--------|------|
+| 🎫 **Create Fix Issue** | [Click to create GitLab issue]({create_issue_link}) |
+| 📋 **View Details** | [Open full analysis]({view_details_link}) |
+
+---
 
 ### Cause
 **{report.cause}**
@@ -70,5 +88,5 @@ def format_mr_comment(report: AnalysisReport, context: InvestigationContext) -> 
 {reviewer}
 
 ---
-<sub>🛰️ Analyzed by **Orbit Detective** for `{project}` · Provider: `{report.provider}` / `{report.model}`</sub>
+<sub>🛰️ **Orbit Detective** · `{project}` · Analysis `{analysis_id[:8]}` · Provider: `{report.provider}`</sub>
 """

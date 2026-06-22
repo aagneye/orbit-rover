@@ -123,7 +123,7 @@ class PipelineAnalyzer:
     return record
 
   async def post_mr_comment(
-    self, context: InvestigationContext, report: AnalysisReport
+    self, context: InvestigationContext, report: AnalysisReport, analysis_id: str
   ) -> bool:
     if not self.settings.post_mr_comment:
       return False
@@ -132,10 +132,18 @@ class PipelineAnalyzer:
       logger.info("No merge request found — skipping MR comment")
       return False
     if not self.settings.gitlab_token:
-      logger.warning("GITLAB_TOKEN not set — skipping MR comment")
+      logger.warning("GITLAB_TOKEN not set — skipping MR comment (demo mode: comment logged only)")
+      body = format_mr_comment(
+        report, context, analysis_id,
+        self.settings.dashboard_base_url, self.settings.public_api_url,
+      )
+      logger.info("MR comment preview:\n%s", body[:500])
       return False
 
-    body = format_mr_comment(report, context)
+    body = format_mr_comment(
+      report, context, analysis_id,
+      self.settings.dashboard_base_url, self.settings.public_api_url,
+    )
     try:
       await self.gitlab.post_merge_request_note(
         context.webhook.project.id, mr.iid, body
@@ -149,8 +157,12 @@ class PipelineAnalyzer:
     self, db: AsyncSession, payload: PipelineWebhookPayload
   ) -> AnalysisRecord:
     context, report = await self.analyze(payload)
-    comment_posted = await self.post_mr_comment(context, report)
-    record = await self.save_analysis(db, context, report, comment_posted)
+    record = await self.save_analysis(db, context, report, mr_comment_posted=False)
+    comment_posted = await self.post_mr_comment(context, report, record.id)
+    if comment_posted != record.mr_comment_posted:
+      record.mr_comment_posted = comment_posted
+      await db.commit()
+      await db.refresh(record)
     logger.info(
       "Analysis complete for pipeline %s — confidence %.0f%%",
       payload.object_attributes.id,
