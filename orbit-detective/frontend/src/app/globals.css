@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+}
+
+.gradient-hero {
+  background: radial-gradient(ellipse at top, rgba(76, 110, 245, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+}
+
+.card-glow {
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.1), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.confidence-high { @apply text-emerald-400; }
+.confidence-medium { @apply text-amber-400; }
+.confidence-low { @apply text-red-400; }
