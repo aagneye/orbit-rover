@@ -27,6 +27,9 @@ export default async function HomePage() {
           AI-powered GitLab pipeline root-cause analysis. When CI fails, Orbit investigates
           automatically — logs, dependencies, ownership — and comments on your merge request.
         </p>
+        <div className="mt-4 p-4 rounded-lg bg-slate-900/40 border border-slate-800 text-xs font-mono text-slate-500 leading-relaxed hidden lg:block">
+          Developer → GitLab Pipeline → Webhook → FastAPI → GitLab API + Orbit API + LLM → MR Comment
+        </div>
       </header>
 
       <div className="mb-8">
