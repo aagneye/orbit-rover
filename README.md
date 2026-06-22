@@ -83,6 +83,18 @@ orbit-rover/
 └── README.md                      # This file
 ```
 
+## Primary Experience (GitLab) ⭐
+
+The developer **never leaves GitLab**:
+
+1. Pipeline fails → webhook triggers Orbit Detective
+2. AI analysis posts as an **MR comment** with diagnosis
+3. Developer clicks **Create Fix Issue** or **View Details** from the comment
+
+## Secondary Experience (Dashboard)
+
+Engineering manager view at `http://localhost:3000` — time saved, top teams, recent failures. For demos and ops visibility only.
+
 ## Quick Start
 
 ```bash
