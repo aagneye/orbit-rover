@@ -1,4 +1,16 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const PRODUCTION_API_URL = "https://orbit-rover-api.onrender.com";
+
+export function getApiUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_API_URL;
+  }
+  return "http://localhost:8000";
+}
+
+const API_URL = getApiUrl();
 const SESSION_KEY = "orbit_session";
 
 export interface UserInfo {

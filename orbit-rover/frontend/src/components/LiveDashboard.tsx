@@ -8,6 +8,7 @@ import { StatsCards } from "@/components/StatsCards";
 import {
   fetchAnalyses,
   fetchStats,
+  getApiUrl,
   loginUrl,
   streamUrl,
   type AnalysisSummary,
@@ -97,7 +98,9 @@ function DashboardInner() {
           This dashboard is for managers and demos.
         </p>
         {error === "offline" && (
-          <p className="text-amber-400 text-sm mt-2">Backend offline — start API on port 8000</p>
+          <p className="text-amber-400 text-sm mt-2">
+            Backend offline — check API at {getApiUrl()}
+          </p>
         )}
       </header>
 
