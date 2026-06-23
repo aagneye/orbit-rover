@@ -11,13 +11,13 @@ export function ManagerDashboard({ stats }: Props) {
 
   return (
     <div className="space-y-6">
-      {stats.top_affected_teams.length > 0 && (
+      {(stats.top_affected_teams?.length ?? 0) > 0 && (
         <section className="card-glow rounded-xl bg-slate-900/60 p-5">
           <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
             Top Affected Teams
           </h2>
           <div className="flex flex-wrap gap-2">
-            {stats.top_affected_teams.map((team) => (
+            {stats.top_affected_teams!.map((team) => (
               <span key={team} className="px-3 py-1.5 rounded-lg bg-orbit-700/30 text-orbit-100 text-sm font-medium">
                 {team}
               </span>

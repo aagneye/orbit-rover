@@ -1,3 +1,5 @@
+"use client";
+
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setSessionToken } from "@/lib/api";
