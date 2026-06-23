@@ -134,7 +134,7 @@ That guide walks you through:
 
 1. **GitLab** — OAuth app, personal access token, pipeline webhook (copy-paste URIs included)
 2. **Database** — Neon free Postgres (not GitHub commits; not Supabase if you're full)
-3. **Backend** — Railway or Fly.io (free, no credit card)
+3. **Backend** — Render.com (Web Service)
 4. **Frontend** — Vercel (free tier)
 5. **GitLab-only login** — no Google; dashboard uses Sign in with GitLab
 
@@ -143,7 +143,7 @@ That guide walks you through:
 | Code | GitLab + GitHub | Free |
 | Auth | GitLab OAuth | Free |
 | Database | Neon Postgres | Free tier |
-| Backend API | Railway or Fly.io | Free |
+| Backend API | Render | Free tier |
 | Dashboard | Vercel | Free |
 | LLM (demo) | `mock` mode | Free |
 | LLM (prod) | OpenAI / Claude | Pay per use |

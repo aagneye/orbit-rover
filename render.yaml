@@ -1,8 +1,12 @@
-# Optional — Render may require a credit card. Prefer Railway or Fly.io (see docs/LIVE_SETUP.md).
+# Orbit Rover — Render Blueprint
+# Deploy: Render Dashboard → New → Blueprint → connect this repo
+# Guide: docs/LIVE_SETUP.md
+
 services:
   - type: web
     name: orbit-rover-api
     runtime: python
+    plan: free
     rootDir: orbit-rover/backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -20,3 +24,12 @@ services:
         value: "true"
       - key: POST_MR_COMMENT
         value: "true"
+      # --- Set these in Render dashboard after deploy (see orbit-rover/.env.example) ---
+      # GITLAB_TOKEN, GITLAB_WEBHOOK_SECRET
+      # GITLAB_OAUTH_CLIENT_ID, GITLAB_OAUTH_CLIENT_SECRET
+      # GITLAB_OAUTH_REDIRECT_URI=https://orbit-rover-api.onrender.com/auth/gitlab/callback
+      # PUBLIC_API_URL=https://orbit-rover-api.onrender.com
+      # DASHBOARD_BASE_URL=https://orbit-rover.vercel.app
+      # CORS_ORIGINS=https://orbit-rover.vercel.app
+      # DATABASE_URL=postgresql+asyncpg://...@ep-xxx.neon.tech/neondb?sslmode=require
+      # SESSION_SECRET=your-random-secret

@@ -52,7 +52,7 @@ class Settings(BaseSettings):
 
 
 def normalize_database_url(url: str) -> str:
-    """Neon/Railway give postgresql:// — convert for SQLAlchemy async."""
+    """Neon/Render give postgresql:// — convert for SQLAlchemy async."""
     if url.startswith("postgresql://"):
         return url.replace("postgresql://", "postgresql+asyncpg://", 1)
     if url.startswith("postgres://"):

@@ -1,6 +1,6 @@
 # Orbit Rover — Live Setup Guide (Beginner)
 
-Step-by-step plan to put **Orbit Rover** live on the internet.  
+Step-by-step plan to put **Orbit Rover** live using **Render** (backend) + **Vercel** (dashboard) + **Neon** (database).  
 **GitLab only** for login (no Google). Copy-paste the URIs below when asked.
 
 ---
@@ -8,278 +8,244 @@ Step-by-step plan to put **Orbit Rover** live on the internet.
 ## What you are building
 
 ```
-Developer → GitLab pipeline fails → Webhook → Your live API → AI analysis → MR comment
+Developer → GitLab pipeline fails → Webhook → Render API → AI analysis → MR comment
                                                       ↓
-                                            Dashboard (optional)
+                                            Vercel dashboard (optional)
                                                       ↓
-                                            Cloud database (Neon)
+                                            Neon Postgres (analyses)
 ```
 
-| Piece | What it does | Recommended service |
-|-------|----------------|---------------------|
-| **Code** | App source | GitLab `main` branch |
-| **GitLab OAuth** | Dashboard login | GitLab → Applications |
-| **GitLab PAT** | API: logs + MR comments | GitLab → Access Tokens |
-| **GitLab Webhook** | Pipeline failure events | Project → Webhooks |
-| **Database** | Stores analyses (not Git commits) | **Neon** (free Postgres) |
-| **Backend** | FastAPI agent | **Railway** or **Fly.io** (free, no card) |
-| **Frontend** | Manager dashboard | **Vercel** (free) |
+| Piece | Service |
+|-------|---------|
+| **Code** | GitLab / GitHub → `orbit-rover` repo |
+| **Backend API** | **Render** (free Web Service) |
+| **Dashboard** | **Vercel** (free) |
+| **Database** | **Neon** (free Postgres) |
+| **Auth** | GitLab OAuth (no Google) |
 
-> **Data is not stored in GitHub/GitLab commits.** Only code lives in git. Analyses go in **Neon**.
-
-> **Render** often asks for a credit card now — skip it. Use **Railway** or **Fly.io** below.
+> Analyses are stored in **Neon**, not in git commits.
 
 ---
 
 ## Phase 0 — Checklist
 
-- [ ] GitLab account (`aagneye-group/orbit-rover`)
+- [ ] GitLab account: `aagneye-group/orbit-rover`
 - [ ] Code on branch **`main`**: https://gitlab.com/aagneye-group/orbit-rover/-/tree/main
-- [ ] Folder in repo: `orbit-rover/` (not the old `orbit-detective` name)
+- [ ] Render account: https://render.com
 - [ ] ~45 minutes
 
 ---
 
 ## Phase 1 — GitLab (OAuth + token + webhook)
 
-### 1.1 View your code
+### 1.1 OAuth application (dashboard login)
 
-1. Open https://gitlab.com/aagneye-group/orbit-rover
-2. Branch dropdown → **`main`**
+1. **https://gitlab.com/-/user_settings/applications** → **Add new application**
 
-### 1.2 OAuth application (dashboard login)
+| Field | Local | Production (Render) |
+|-------|-------|---------------------|
+| **Name** | `Orbit Rover` | `Orbit Rover` |
+| **Redirect URI** | `http://localhost:8000/auth/gitlab/callback` | `https://YOUR-SERVICE.onrender.com/auth/gitlab/callback` |
+| **Confidential** | ✅ Yes | ✅ Yes |
+| **Scopes** | `read_user`, `api`, `read_api` | same |
 
-1. Go to **https://gitlab.com/-/user_settings/applications**
-2. **Add new application**
-
-| Field | Value |
-|-------|--------|
-| **Name** | `Orbit Rover` |
-| **Redirect URI** | See copy-paste box below |
-| **Confidential** | ✅ Yes |
-| **Scopes** | `read_user`, `api`, `read_api` |
-
-**Redirect URIs — add ALL that you will use:**
+**Copy-paste Redirect URIs (add both):**
 
 ```
 http://localhost:8000/auth/gitlab/callback
-https://YOUR-BACKEND-URL/auth/gitlab/callback
+https://YOUR-SERVICE.onrender.com/auth/gitlab/callback
 ```
 
-Replace `YOUR-BACKEND-URL` after Phase 3 (e.g. `orbit-rover-api.up.railway.app`).
+Replace `YOUR-SERVICE` with your real Render service name after Phase 3 (e.g. `orbit-rover-api`).
 
-Save → copy **Application ID** and **Secret** → `GITLAB_OAUTH_CLIENT_ID`, `GITLAB_OAUTH_CLIENT_SECRET`
+Save → copy **Application ID** → `GITLAB_OAUTH_CLIENT_ID`  
+Save → copy **Secret** → `GITLAB_OAUTH_CLIENT_SECRET`
 
-### 1.3 Personal Access Token (backend bot)
+### 1.2 Personal Access Token (backend bot)
 
 1. **https://gitlab.com/-/user_settings/personal_access_tokens**
 2. Name: `orbit-rover-bot`
 3. Scopes: **`api`**, **`read_api`**, **`read_repository`**
 4. Copy token → `GITLAB_TOKEN`
 
-### 1.4 Webhook (do after backend is live)
+### 1.3 Webhook (after Render is live — Phase 5)
 
 | Field | Value |
 |-------|--------|
-| **URL** | `https://YOUR-BACKEND-URL/webhooks/gitlab/pipeline` |
-| **Secret** | Random string → `GITLAB_WEBHOOK_SECRET` |
+| **URL** | `https://YOUR-SERVICE.onrender.com/webhooks/gitlab/pipeline` |
+| **Secret token** | Same as `GITLAB_WEBHOOK_SECRET` in Render |
 | **Trigger** | ✅ Pipeline events |
 
-Project → **Settings → Webhooks**
+GitLab project → **Settings → Webhooks**
 
 ---
 
-## Phase 2 — Database (Neon — free Postgres)
+## Phase 2 — Database (Neon)
 
-Supabase full? Use **Neon**: https://neon.tech
-
-1. Sign up → **New project** → name: `orbit-rover`
-2. Copy connection string
-3. Change prefix for our app:
+1. https://neon.tech → Sign up → **New project** → `orbit-rover`
+2. Copy the connection string
+3. Change the prefix for our app:
 
 ```
 postgresql+asyncpg://USER:PASSWORD@ep-xxxx.neon.tech/neondb?sslmode=require
 ```
 
-Paste as `DATABASE_URL` in your backend host (Phase 3).
+You will paste this as `DATABASE_URL` in Render (Phase 3).
 
-**Realtime dashboard:** uses SSE (`/api/analyses/stream`) — no Supabase needed.
-
-### Other free DB options
-
-| Service | Free tier |
-|---------|-----------|
-| **Neon** | 0.5 GB — recommended |
-| **ElephantSQL** | 20 MB — hackathon OK |
-| **Railway Postgres** | Included in $5/mo trial credit |
+**Realtime dashboard:** SSE at `/api/analyses/stream` — no Supabase needed.
 
 ---
 
-## Phase 3 — Deploy backend (pick ONE)
+## Phase 3 — Deploy backend on Render
 
-Use `YOUR-BACKEND-URL` everywhere below (no `https://` in some dashboards — they add it).
+### 3.1 Connect repo
 
-### Option A — Railway (recommended, no card for trial)
+1. Go to **https://dashboard.render.com**
+2. **New +** → **Blueprint** (uses `render.yaml` in repo root)  
+   **OR** **New +** → **Web Service** → connect GitHub/GitLab repo `orbit-rover`
 
-1. https://railway.app → Sign up with **GitHub**
-2. **New Project → Deploy from GitHub repo** → `orbit-rover`
-3. Settings:
+### 3.2 Web Service settings (if not using Blueprint)
 
 | Setting | Value |
 |---------|--------|
-| **Root directory** | `orbit-rover/backend` |
-| **Start command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| **Name** | `orbit-rover-api` |
+| **Region** | Pick closest to you |
+| **Branch** | `main` or `master` |
+| **Root Directory** | `orbit-rover/backend` |
+| **Runtime** | Python 3 |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| **Instance Type** | Free |
 
-4. **Variables** → paste env block from [Phase 5](#phase-5--environment-variables-copy-paste)
-5. **Settings → Networking → Generate domain**  
-   Example: `orbit-rover-api-production.up.railway.app`
-6. Test: `https://YOUR-BACKEND-URL/api/health`
+### 3.3 Environment variables (Render → Environment)
 
-Config file in repo: `orbit-rover/backend/railway.toml`
-
-### Option B — Fly.io (free allowance)
-
-1. Install Fly CLI: https://fly.io/docs/hands-on/install-flyctl/
-2. `fly auth login`
-3. From repo:
-
-```bash
-cd orbit-rover/backend
-fly launch --no-deploy
-fly secrets set GITLAB_TOKEN=... DATABASE_URL=...  # see Phase 5
-fly deploy
-```
-
-4. URL like: `https://orbit-rover-api.fly.dev`
-
-Config file: `orbit-rover/backend/fly.toml`
-
-### Option C — Koyeb (free tier)
-
-1. https://www.koyeb.com → Deploy from GitHub
-2. Root: `orbit-rover/backend`
-3. Build: `pip install -r requirements.txt`
-4. Run: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
-5. Add env vars from Phase 5
-
-### Option D — Render (optional — may require payment)
-
-Render free tier now often needs a credit card. If you already have an account:
-
-- Root: `orbit-rover/backend`
-- See `render.yaml` in repo root
-
----
-
-## Phase 4 — Deploy frontend (Vercel)
-
-1. https://vercel.com → Import `orbit-rover` from GitHub/GitLab
-2. **Root Directory:** `orbit-rover/frontend`
-3. Environment:
+Click **Add Environment Variable** and paste from `orbit-rover/.env.example` (production section), or use:
 
 ```env
-NEXT_PUBLIC_API_URL=https://YOUR-BACKEND-URL
-```
-
-4. Deploy → e.g. `https://orbit-rover.vercel.app`
-5. Update backend env: `DASHBOARD_BASE_URL`, `CORS_ORIGINS` → redeploy backend
-
----
-
-## Phase 5 — Environment variables (copy-paste)
-
-Set these on **Railway / Fly / Koyeb** (backend):
-
-```env
-# GitLab API
 GITLAB_URL=https://gitlab.com
 GITLAB_TOKEN=glpat-xxxxxxxxxxxx
 GITLAB_WEBHOOK_SECRET=your-long-random-secret
 
-# GitLab OAuth (Phase 1.2)
-GITLAB_OAUTH_CLIENT_ID=your-app-id
-GITLAB_OAUTH_CLIENT_SECRET=your-app-secret
-GITLAB_OAUTH_REDIRECT_URI=https://YOUR-BACKEND-URL/auth/gitlab/callback
+GITLAB_OAUTH_CLIENT_ID=your-application-id
+GITLAB_OAUTH_CLIENT_SECRET=your-application-secret
+GITLAB_OAUTH_REDIRECT_URI=https://orbit-rover-api.onrender.com/auth/gitlab/callback
 
-# Public URLs (update after deploy)
-PUBLIC_API_URL=https://YOUR-BACKEND-URL
-DASHBOARD_BASE_URL=https://YOUR-FRONTEND-URL
-CORS_ORIGINS=https://YOUR-FRONTEND-URL
+PUBLIC_API_URL=https://orbit-rover-api.onrender.com
+DASHBOARD_BASE_URL=https://YOUR-FRONTEND.vercel.app
+CORS_ORIGINS=https://YOUR-FRONTEND.vercel.app
 
-# Database (Phase 2)
 DATABASE_URL=postgresql+asyncpg://user:pass@ep-xxx.neon.tech/neondb?sslmode=require
 
-# Auth
 AUTH_ENABLED=true
-SESSION_SECRET=generate-64-char-random-string
+SESSION_SECRET=generate-a-long-random-string-here
 SESSION_COOKIE_SECURE=true
 
-# LLM (mock for hackathon demo)
 LLM_PROVIDER=mock
 ORBIT_USE_MOCK=true
 POST_MR_COMMENT=true
 ```
 
+> Update `DASHBOARD_BASE_URL` and `CORS_ORIGINS` after Vercel deploy (Phase 4), then **Manual Deploy** on Render.
+
+### 3.4 Deploy and copy URL
+
+Example URL: `https://orbit-rover-api.onrender.com`
+
+**Test:**
+
+```
+https://orbit-rover-api.onrender.com/api/health
+```
+
+Should return `"status": "healthy"`.
+
+### 3.5 Update GitLab OAuth redirect
+
+Go back to Phase 1.1 and add your real Render callback:
+
+```
+https://orbit-rover-api.onrender.com/auth/gitlab/callback
+```
+
+Must **exactly** match `GITLAB_OAUTH_REDIRECT_URI` in Render.
+
 ---
 
-## Phase 6 — Wire GitLab (after backend URL exists)
+## Phase 4 — Deploy frontend on Vercel
 
-### Update OAuth redirect URI
+1. https://vercel.com → **Add New Project** → import `orbit-rover`
+2. **Root Directory:** `orbit-rover/frontend`
+3. Environment variable:
 
-Add to GitLab application (Phase 1.2):
-
+```env
+NEXT_PUBLIC_API_URL=https://orbit-rover-api.onrender.com
 ```
-https://YOUR-BACKEND-URL/auth/gitlab/callback
+
+4. Deploy → copy URL e.g. `https://orbit-rover.vercel.app`
+
+5. Back on **Render** → update:
+
+```env
+DASHBOARD_BASE_URL=https://orbit-rover.vercel.app
+CORS_ORIGINS=https://orbit-rover.vercel.app
 ```
 
-Must **exactly** match `GITLAB_OAUTH_REDIRECT_URI`.
-
-### Add webhook
-
-```
-https://YOUR-BACKEND-URL/webhooks/gitlab/pipeline
-```
+6. **Manual Deploy** on Render to apply CORS changes.
 
 ---
 
-## Phase 7 — Verify
+## Phase 5 — GitLab webhook
+
+In your GitLab project → **Settings → Webhooks**:
+
+```
+https://orbit-rover-api.onrender.com/webhooks/gitlab/pipeline
+```
+
+Secret token = your `GITLAB_WEBHOOK_SECRET` value from Render.
+
+---
+
+## Phase 6 — Verify
 
 ```bash
-# Health
-curl https://YOUR-BACKEND-URL/api/health
+curl https://orbit-rover-api.onrender.com/api/health
+```
 
-# Demo analysis
-curl -X POST https://YOUR-BACKEND-URL/webhooks/gitlab/pipeline/sync \
+```bash
+curl -X POST https://orbit-rover-api.onrender.com/webhooks/gitlab/pipeline/sync \
   -H "Content-Type: application/json" \
   -H "X-Gitlab-Token: YOUR_WEBHOOK_SECRET" \
   -d @orbit-rover/backend/fixtures/sample_pipeline_webhook.json
 ```
 
-1. Open dashboard → **Sign in with GitLab**
-2. See analysis appear (live stream ~8s)
+1. Open Vercel dashboard URL → **Sign in with GitLab**
+2. See the demo analysis
 3. Fail a real pipeline → MR gets Orbit Rover comment
 
 ---
 
-## Quick reference — all URIs
+## Quick reference — copy-paste URIs
 
 ```text
 # GitLab OAuth Redirect URIs
 http://localhost:8000/auth/gitlab/callback
-https://YOUR-BACKEND-URL/auth/gitlab/callback
+https://orbit-rover-api.onrender.com/auth/gitlab/callback
 
 # GitLab Webhook
-https://YOUR-BACKEND-URL/webhooks/gitlab/pipeline
+https://orbit-rover-api.onrender.com/webhooks/gitlab/pipeline
 
-# Vercel
-NEXT_PUBLIC_API_URL=https://YOUR-BACKEND-URL
+# Vercel env
+NEXT_PUBLIC_API_URL=https://orbit-rover-api.onrender.com
 
-# Backend
-DASHBOARD_BASE_URL=https://YOUR-FRONTEND-URL
-CORS_ORIGINS=https://YOUR-FRONTEND-URL
-PUBLIC_API_URL=https://YOUR-BACKEND-URL
-GITLAB_OAUTH_REDIRECT_URI=https://YOUR-BACKEND-URL/auth/gitlab/callback
+# Render env (backend)
+PUBLIC_API_URL=https://orbit-rover-api.onrender.com
+DASHBOARD_BASE_URL=https://orbit-rover.vercel.app
+CORS_ORIGINS=https://orbit-rover.vercel.app
+GITLAB_OAUTH_REDIRECT_URI=https://orbit-rover-api.onrender.com/auth/gitlab/callback
 ```
+
+Replace `orbit-rover-api` / `orbit-rover.vercel.app` with your actual Render and Vercel hostnames.
 
 ---
 
@@ -288,15 +254,19 @@ GITLAB_OAUTH_REDIRECT_URI=https://YOUR-BACKEND-URL/auth/gitlab/callback
 ```bash
 cd orbit-rover
 cp .env.example .env
+# Edit .env — local section only
 
-cd backend && pip install -r requirements.txt
+cd backend
+pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 
-cd ../frontend && npm install && npm run dev
+cd ../frontend
+npm install
+npm run dev
 ```
 
-Dashboard: http://localhost:3000  
-API: http://localhost:8000
+- API: http://localhost:8000  
+- Dashboard: http://localhost:3000
 
 ---
 
@@ -304,12 +274,13 @@ API: http://localhost:8000
 
 | Problem | Fix |
 |---------|-----|
-| GitLab shows 1 commit on `master` | Switch to branch **`main`** |
-| `git push gitlab master` fails | Use `git push gitlab master:main` |
+| Render build fails | Check **Root Directory** = `orbit-rover/backend` |
+| `Application failed to respond` | Free tier sleeps — first request takes ~30s |
 | OAuth redirect mismatch | GitLab URI must match `GITLAB_OAUTH_REDIRECT_URI` exactly |
-| Render asks for payment | Use **Railway** or **Fly.io** instead |
 | Database error | Use `postgresql+asyncpg://` not `postgresql://` |
-| Dashboard 401 | Set `AUTH_ENABLED=true` and sign in with GitLab |
+| Webhook not firing | Check secret token + Pipeline events enabled |
+| CORS error on dashboard | Set `CORS_ORIGINS` to exact Vercel URL, redeploy Render |
+| GitLab shows old code | Switch branch to **`main`** on GitLab |
 
 ---
 
