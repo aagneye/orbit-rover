@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { clearSessionToken, fetchMe, loginUrl, logoutUrl, type UserInfo } from "@/lib/api";
+import { clearSessionToken, fetchHealth, fetchMe, loginUrl, logoutUrl, type UserInfo } from "@/lib/api";
 
 export function AuthBar() {
   const [user, setUser] = useState<UserInfo | null>(null);
+  const [oauthReady, setOauthReady] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMe()
-      .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetchMe().then(setUser).catch(() => setUser(null)),
+      fetchHealth()
+        .then((h) => setOauthReady(h.oauth_configured !== false))
+        .catch(() => setOauthReady(false)),
+    ]).finally(() => setLoading(false));
   }, []);
 
   if (loading) return null;
@@ -19,7 +22,17 @@ export function AuthBar() {
   if (user?.auth_disabled) {
     return (
       <div className="text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-        Auth off (local dev) — set <code className="text-amber-300">AUTH_ENABLED=true</code> for production
+        Auth off on API — redeploy Render backend after latest push
+      </div>
+    );
+  }
+
+  if (!oauthReady) {
+    return (
+      <div className="text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 max-w-xs">
+        GitLab OAuth not configured on API — set{" "}
+        <code className="text-amber-300">GITLAB_OAUTH_CLIENT_ID</code> and{" "}
+        <code className="text-amber-300">GITLAB_OAUTH_CLIENT_SECRET</code> in Render
       </div>
     );
   }

@@ -26,6 +26,8 @@ async def health(settings: Settings = Depends(get_settings)) -> dict[str, str | 
     "version": settings.app_version,
     "llm_provider": settings.llm_provider,
     "auth_enabled": settings.auth_enabled,
+    "oauth_configured": settings.oauth_configured,
+    "dashboard_base_url": settings.dashboard_base_url,
   }
 
 

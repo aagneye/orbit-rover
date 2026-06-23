@@ -1,7 +1,12 @@
 from functools import lru_cache
-from typing import Literal
+import os
+from typing import Literal, Self
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+PRODUCTION_API_URL = "https://orbit-rover-api.onrender.com"
+PRODUCTION_DASHBOARD_URL = "https://orbit-rover.vercel.app"
 
 
 class Settings(BaseSettings):
@@ -49,6 +54,33 @@ class Settings(BaseSettings):
     session_secret: str = "change-me-in-production"
     session_max_age: int = 60 * 60 * 24 * 7  # 7 days
     session_cookie_secure: bool = False  # set True in production (HTTPS)
+
+    @model_validator(mode="after")
+    def apply_render_defaults(self) -> Self:
+        """Render sets RENDER=true; apply production URLs when env vars are unset."""
+        if os.environ.get("RENDER") != "true":
+            return self
+
+        if os.environ.get("AUTH_ENABLED") is None:
+            self.auth_enabled = True
+        if os.environ.get("SESSION_COOKIE_SECURE") is None:
+            self.session_cookie_secure = True
+        if not os.environ.get("PUBLIC_API_URL") and self.public_api_url == "http://localhost:8000":
+            self.public_api_url = PRODUCTION_API_URL
+        if not os.environ.get("DASHBOARD_BASE_URL") and self.dashboard_base_url == "http://localhost:3000":
+            self.dashboard_base_url = PRODUCTION_DASHBOARD_URL
+        if not os.environ.get("CORS_ORIGINS") and self.cors_origins == "http://localhost:3000":
+            self.cors_origins = PRODUCTION_DASHBOARD_URL
+        if (
+            not os.environ.get("GITLAB_OAUTH_REDIRECT_URI")
+            and self.gitlab_oauth_redirect_uri == "http://localhost:8000/auth/gitlab/callback"
+        ):
+            self.gitlab_oauth_redirect_uri = f"{self.public_api_url.rstrip('/')}/auth/gitlab/callback"
+        return self
+
+    @property
+    def oauth_configured(self) -> bool:
+        return bool(self.gitlab_oauth_client_id and self.gitlab_oauth_client_secret)
 
 
 @lru_cache

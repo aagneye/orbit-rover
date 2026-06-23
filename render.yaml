@@ -28,4 +28,13 @@ services:
         value: sqlite+aiosqlite:////tmp/orbit_rover.db
       - key: RENDER
         value: "true"
-      # Override with Neon when ready: postgresql+asyncpg://...@ep-xxx.neon.tech/neondb?sslmode=require
+      - key: PUBLIC_API_URL
+        value: "https://orbit-rover-api.onrender.com"
+      - key: DASHBOARD_BASE_URL
+        value: "https://orbit-rover.vercel.app"
+      - key: CORS_ORIGINS
+        value: "https://orbit-rover.vercel.app"
+      - key: GITLAB_OAUTH_REDIRECT_URI
+        value: "https://orbit-rover-api.onrender.com/auth/gitlab/callback"
+      # Set in Render dashboard (secrets): GITLAB_TOKEN, GITLAB_OAUTH_CLIENT_ID,
+      # GITLAB_OAUTH_CLIENT_SECRET, GITLAB_WEBHOOK_SECRET, SESSION_SECRET

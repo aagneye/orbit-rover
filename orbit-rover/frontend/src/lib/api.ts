@@ -124,6 +124,15 @@ export function streamUrl(): string {
     : `${API_URL}/api/analyses/stream`;
 }
 
+export async function fetchHealth(): Promise<{
+  auth_enabled: boolean;
+  oauth_configured?: boolean;
+}> {
+  const res = await fetch(`${API_URL}/api/health`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Health check failed");
+  return res.json();
+}
+
 export async function fetchMe(): Promise<UserInfo> {
   const res = await apiFetch("/auth/gitlab/me");
   if (!res.ok) throw new Error("Not signed in");
