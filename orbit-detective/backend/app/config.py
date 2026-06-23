@@ -40,6 +40,25 @@ class Settings(BaseSettings):
     dashboard_base_url: str = "http://localhost:3000"
     public_api_url: str = "http://localhost:8000"
 
+    # GitLab OAuth (dashboard login — no Google)
+    auth_enabled: bool = False
+    gitlab_oauth_client_id: str = ""
+    gitlab_oauth_client_secret: str = ""
+    gitlab_oauth_redirect_uri: str = "http://localhost:8000/auth/gitlab/callback"
+    gitlab_oauth_scopes: str = "read_user api read_api"
+    session_secret: str = "change-me-in-production"
+    session_max_age: int = 60 * 60 * 24 * 7  # 7 days
+    session_cookie_secure: bool = False  # set True in production (HTTPS)
+
+
+def normalize_database_url(url: str) -> str:
+    """Neon/Railway give postgresql:// — convert for SQLAlchemy async."""
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+asyncpg://", 1)
+    return url
+
 
 @lru_cache
 def get_settings() -> Settings:

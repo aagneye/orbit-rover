@@ -4,13 +4,13 @@ import logging
 
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
+from app.auth.deps import get_current_user
 from app.auth.gitlab_oauth import (
   STATE_COOKIE,
   create_session_token,
-  decode_session_token,
   exchange_code,
   fetch_gitlab_user,
   gitlab_authorize_url,
@@ -22,19 +22,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth/gitlab", tags=["auth"])
 
 SESSION_COOKIE = "orbit_session"
-
-
-def get_current_user(request: Request, settings: Settings = Depends(get_settings)) -> dict | None:
-  if not settings.auth_enabled:
-    return {"username": "dev", "name": "Local Dev", "auth_disabled": True}
-  token = request.cookies.get(SESSION_COOKIE)
-  if not token:
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.startswith("Bearer "):
-      token = auth_header[7:]
-  if not token:
-    return None
-  return decode_session_token(settings, token)
 
 
 @router.get("/login")

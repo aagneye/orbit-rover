@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.deps import require_user
 from app.config import Settings, get_settings
 from app.database import get_db
 from app.models.analysis import AnalysisRecord
@@ -18,23 +19,32 @@ MINUTES_SAVED_PER_ANALYSIS = 198  # ~3h 18m per manual investigation avoided
 
 
 @router.get("/health")
-async def health(settings: Settings = Depends(get_settings)) -> dict[str, str]:
+async def health(settings: Settings = Depends(get_settings)) -> dict[str, str | bool]:
   return {
     "status": "healthy",
     "app": settings.app_name,
     "version": settings.app_version,
     "llm_provider": settings.llm_provider,
+    "auth_enabled": settings.auth_enabled,
   }
 
 
 @router.get("/analyses")
-async def analyses(limit: int = 50, db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
+async def analyses(
+  limit: int = 50,
+  db: AsyncSession = Depends(get_db),
+  _user: dict = Depends(require_user),
+) -> list[dict[str, Any]]:
   items = await list_analyses(db, limit=limit)
   return [item.model_dump(mode="json") for item in items]
 
 
 @router.get("/analyses/{analysis_id}")
-async def analysis_detail(analysis_id: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+async def analysis_detail(
+  analysis_id: str,
+  db: AsyncSession = Depends(get_db),
+  _user: dict = Depends(require_user),
+) -> dict[str, Any]:
   record = await get_analysis(db, analysis_id)
   if not record:
     raise HTTPException(status_code=404, detail="Analysis not found")
@@ -128,7 +138,10 @@ def _service_label(project_path: str) -> str:
 
 
 @router.get("/stats")
-async def stats(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+async def stats(
+  db: AsyncSession = Depends(get_db),
+  _user: dict = Depends(require_user),
+) -> dict[str, Any]:
   result = await db.execute(select(AnalysisRecord).order_by(AnalysisRecord.created_at.desc()).limit(1000))
   records = result.scalars().all()
 
