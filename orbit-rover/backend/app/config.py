@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     ollama_model: str = "llama3.2"
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///./data/orbit_rover.db"
+    database_url: str = ""  # empty = auto (SQLite /tmp on Render, ./data locally)
 
     # Analysis behavior
     post_mr_comment: bool = True
@@ -49,15 +49,6 @@ class Settings(BaseSettings):
     session_secret: str = "change-me-in-production"
     session_max_age: int = 60 * 60 * 24 * 7  # 7 days
     session_cookie_secure: bool = False  # set True in production (HTTPS)
-
-
-def normalize_database_url(url: str) -> str:
-    """Neon/Render give postgresql:// — convert for SQLAlchemy async."""
-    if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+asyncpg://", 1)
-    return url
 
 
 @lru_cache

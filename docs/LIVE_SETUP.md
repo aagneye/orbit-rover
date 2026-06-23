@@ -277,7 +277,8 @@ npm run dev
 | Render build fails | Check **Root Directory** = `orbit-rover/backend` |
 | `Application failed to respond` | Free tier sleeps — first request takes ~30s |
 | OAuth redirect mismatch | GitLab URI must match `GITLAB_OAUTH_REDIRECT_URI` exactly |
-| Database error | Use `postgresql+asyncpg://` not `postgresql://` |
+| Database error on deploy | Use `sqlite+aiosqlite:////tmp/orbit_rover.db` on Render until Neon is ready |
+| Neon / Postgres SSL error | URL can include `?sslmode=require` — app strips it and enables SSL automatically |
 | Webhook not firing | Check secret token + Pipeline events enabled |
 | CORS error on dashboard | Set `CORS_ORIGINS` to exact Vercel URL, redeploy Render |
 | GitLab shows old code | Switch branch to **`main`** on GitLab |

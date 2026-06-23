@@ -24,12 +24,8 @@ services:
         value: "true"
       - key: POST_MR_COMMENT
         value: "true"
-      # --- Set these in Render dashboard after deploy (see orbit-rover/.env.example) ---
-      # GITLAB_TOKEN, GITLAB_WEBHOOK_SECRET
-      # GITLAB_OAUTH_CLIENT_ID, GITLAB_OAUTH_CLIENT_SECRET
-      # GITLAB_OAUTH_REDIRECT_URI=https://orbit-rover-api.onrender.com/auth/gitlab/callback
-      # PUBLIC_API_URL=https://orbit-rover-api.onrender.com
-      # DASHBOARD_BASE_URL=https://orbit-rover.vercel.app
-      # CORS_ORIGINS=https://orbit-rover.vercel.app
-      # DATABASE_URL=postgresql+asyncpg://...@ep-xxx.neon.tech/neondb?sslmode=require
-      # SESSION_SECRET=your-random-secret
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:////tmp/orbit_rover.db
+      - key: RENDER
+        value: "true"
+      # Override with Neon when ready: postgresql+asyncpg://...@ep-xxx.neon.tech/neondb?sslmode=require
