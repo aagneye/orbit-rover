@@ -1,8 +1,9 @@
+# Optional — Render may require a credit card. Prefer Railway or Fly.io (see docs/LIVE_SETUP.md).
 services:
   - type: web
-    name: orbit-detective-api
+    name: orbit-rover-api
     runtime: python
-    rootDir: orbit-detective/backend
+    rootDir: orbit-rover/backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
@@ -19,6 +20,3 @@ services:
         value: "true"
       - key: POST_MR_COMMENT
         value: "true"
-      # Set in Render dashboard (see docs/LIVE_SETUP.md):
-      # GITLAB_TOKEN, GITLAB_WEBHOOK_SECRET, GITLAB_OAUTH_*,
-      # DATABASE_URL, PUBLIC_API_URL, DASHBOARD_BASE_URL, CORS_ORIGINS, SESSION_SECRET

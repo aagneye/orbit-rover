@@ -1,22 +1,22 @@
 # Orbit Rover
 
-Monorepo for **Orbit Detective** — an AI-powered GitLab pipeline root-cause analysis agent.
+Monorepo for **Orbit Rover** — an AI-powered GitLab pipeline root-cause analysis agent.
 
 ## Repositories
 
 | Remote | URL | Branch with your code |
 |--------|-----|------------------------|
 | **GitHub** | https://github.com/aagneye/orbit-rover | `master` (65 commits) |
-| **GitLab** | https://gitlab.com/aagneye-group/orbit-rover | `main` or `orbit-detective` (65 commits) |
+| **GitLab** | https://gitlab.com/aagneye-group/orbit-rover | `main` or `orbit-rover` (65 commits) |
 
 ### Why GitLab `master` looks empty
 
-You are viewing the **`master`** branch on GitLab. That branch still has only the old **Node.js Express template** (1 commit). All Orbit Detective code was pushed to **`main`** and **`orbit-detective`** because `master` is **protected** and rejects force-push.
+You are viewing the **`master`** branch on GitLab. That branch still has only the old **Node.js Express template** (1 commit). All Orbit Rover code was pushed to **`main`** and **`orbit-rover`** because `master` is **protected** and rejects force-push.
 
 **To see your code on GitLab now:** open the branch dropdown (bottom-left) and switch to **`main`**:
 https://gitlab.com/aagneye-group/orbit-rover/-/tree/main
 
-Or use the green banner **"Create merge request"** to merge `orbit-detective` → `master`.
+Or use the green banner **"Create merge request"** to merge `orbit-rover` → `master`.
 
 ### Git remotes (configured)
 
@@ -34,8 +34,8 @@ git push github master
 # Push to GitLab (use main until master is unprotected)
 git push gitlab master:main
 
-# Optional: keep orbit-detective in sync
-git push gitlab master:orbit-detective
+# Optional: keep orbit-rover in sync
+git push gitlab master:orbit-rover
 ```
 
 Once GitLab `master` is unprotected (Settings → Repository → Protected branches), you can use:
@@ -73,7 +73,7 @@ GitHub: use a **Personal Access Token** or `gh auth login`.
                                  │
                                  ▼
               ┌─────────────────────────────────────┐
-              │       Orbit Detective Backend        │
+              │       Orbit Rover Backend        │
               │           (FastAPI)                  │
               └─────────────────────────────────────┘
                  │               │               │
@@ -99,7 +99,7 @@ GitHub: use a **Personal Access Token** or `gh auth login`.
 
 ```
 orbit-rover/
-├── orbit-detective/
+├── orbit-rover/
 │   ├── backend/                 # FastAPI application
 │   │   ├── app/
 │   │   │   ├── api/             # REST routes (health, analyses, stats)
@@ -134,7 +134,7 @@ That guide walks you through:
 
 1. **GitLab** — OAuth app, personal access token, pipeline webhook (copy-paste URIs included)
 2. **Database** — Neon free Postgres (not GitHub commits; not Supabase if you're full)
-3. **Backend** — Render.com (free tier)
+3. **Backend** — Railway or Fly.io (free, no credit card)
 4. **Frontend** — Vercel (free tier)
 5. **GitLab-only login** — no Google; dashboard uses Sign in with GitLab
 
@@ -143,7 +143,7 @@ That guide walks you through:
 | Code | GitLab + GitHub | Free |
 | Auth | GitLab OAuth | Free |
 | Database | Neon Postgres | Free tier |
-| Backend API | Render | Free tier |
+| Backend API | Railway or Fly.io | Free |
 | Dashboard | Vercel | Free |
 | LLM (demo) | `mock` mode | Free |
 | LLM (prod) | OpenAI / Claude | Pay per use |
@@ -152,7 +152,7 @@ That guide walks you through:
 
 The developer **never leaves GitLab**:
 
-1. Pipeline fails → webhook triggers Orbit Detective
+1. Pipeline fails → webhook triggers Orbit Rover
 2. AI analysis posts as an **MR comment** with diagnosis
 3. Developer clicks **Create Fix Issue** or **View Details** from the comment
 
@@ -163,7 +163,7 @@ Engineering manager view at `http://localhost:3000` — time saved, top teams, r
 ## Quick Start
 
 ```bash
-cd orbit-detective
+cd orbit-rover
 cp .env.example .env
 
 # Backend
@@ -177,7 +177,7 @@ cd frontend && npm install && npm run dev
 powershell -File scripts/demo.ps1
 ```
 
-See [orbit-detective/README.md](orbit-detective/README.md) for full setup, webhook configuration, and LLM provider options.
+See [orbit-rover/README.md](orbit-rover/README.md) for full setup, webhook configuration, and LLM provider options.
 
 ## GitLab Webhook
 
