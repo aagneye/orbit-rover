@@ -126,6 +126,28 @@ orbit-rover/
 └── README.md                      # This file
 ```
 
+## Go live (step-by-step for beginners)
+
+**Start here:** [docs/LIVE_SETUP.md](docs/LIVE_SETUP.md)
+
+That guide walks you through:
+
+1. **GitLab** — OAuth app, personal access token, pipeline webhook (copy-paste URIs included)
+2. **Database** — Neon free Postgres (not GitHub commits; not Supabase if you're full)
+3. **Backend** — Render.com (free tier)
+4. **Frontend** — Vercel (free tier)
+5. **GitLab-only login** — no Google; dashboard uses Sign in with GitLab
+
+| What | Service | Cost |
+|------|---------|------|
+| Code | GitLab + GitHub | Free |
+| Auth | GitLab OAuth | Free |
+| Database | Neon Postgres | Free tier |
+| Backend API | Render | Free tier |
+| Dashboard | Vercel | Free |
+| LLM (demo) | `mock` mode | Free |
+| LLM (prod) | OpenAI / Claude | Pay per use |
+
 ## Primary Experience (GitLab) ⭐
 
 The developer **never leaves GitLab**:
