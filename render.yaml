@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: orbit-detective-api
+    runtime: python
+    rootDir: orbit-detective/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: AUTH_ENABLED
+        value: "true"
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: LLM_PROVIDER
+        value: mock
+      - key: ORBIT_USE_MOCK
+        value: "true"
+      - key: POST_MR_COMMENT
+        value: "true"
+      # Set in Render dashboard (see docs/LIVE_SETUP.md):
+      # GITLAB_TOKEN, GITLAB_WEBHOOK_SECRET, GITLAB_OAUTH_*,
+      # DATABASE_URL, PUBLIC_API_URL, DASHBOARD_BASE_URL, CORS_ORIGINS, SESSION_SECRET
