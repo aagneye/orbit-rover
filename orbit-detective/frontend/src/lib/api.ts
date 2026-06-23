@@ -1,4 +1,12 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const SESSION_KEY = "orbit_session";
+
+export interface UserInfo {
+  username?: string;
+  name?: string;
+  avatar_url?: string;
+  auth_disabled?: boolean;
+}
 
 export interface AnalysisSummary {
   id: string;
@@ -63,25 +71,81 @@ export interface Stats {
   } | null;
 }
 
+export function getSessionToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(SESSION_KEY);
+}
+
+export function setSessionToken(token: string): void {
+  localStorage.setItem(SESSION_KEY, token);
+}
+
+export function clearSessionToken(): void {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function authHeaders(): HeadersInit {
+  const token = getSessionToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  return fetch(`${API_URL}${path}`, {
+    ...init,
+    credentials: "include",
+    headers: { ...authHeaders(), ...init?.headers },
+  });
+}
+
+export function loginUrl(): string {
+  return `${API_URL}/auth/gitlab/login`;
+}
+
+export function logoutUrl(): string {
+  return `${API_URL}/auth/gitlab/logout`;
+}
+
+export function streamUrl(): string {
+  const token = getSessionToken();
+  return token
+    ? `${API_URL}/api/analyses/stream?token=${encodeURIComponent(token)}`
+    : `${API_URL}/api/analyses/stream`;
+}
+
+export async function fetchMe(): Promise<UserInfo> {
+  const res = await apiFetch("/auth/gitlab/me");
+  if (!res.ok) throw new Error("Not signed in");
+  return res.json();
+}
+
 export async function fetchAnalyses(): Promise<AnalysisSummary[]> {
-  const res = await fetch(`${API_URL}/api/analyses`, { next: { revalidate: 10 } });
+  const res = await apiFetch("/api/analyses", { cache: "no-store" });
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
   if (!res.ok) throw new Error("Failed to fetch analyses");
   return res.json();
 }
 
 export async function fetchAnalysis(id: string): Promise<AnalysisDetail> {
-  const res = await fetch(`${API_URL}/api/analyses/${id}`, { cache: "no-store" });
+  const res = await apiFetch(`/api/analyses/${id}`, { cache: "no-store" });
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
   if (!res.ok) throw new Error("Analysis not found");
   return res.json();
 }
 
 export async function fetchStats(): Promise<Stats> {
-  const res = await fetch(`${API_URL}/api/stats`, { next: { revalidate: 10 } });
-  if (!res.ok) return {
-    total: 0, avg_confidence: 0, projects: [],
-    avg_time_saved: "0m", most_common_failure: "—",
-    top_affected_teams: [], latest_analysis: null,
-  };
+  const res = await apiFetch("/api/stats", { cache: "no-store" });
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
+  if (!res.ok) {
+    return {
+      total: 0,
+      avg_confidence: 0,
+      projects: [],
+      avg_time_saved: "0m",
+      most_common_failure: "—",
+      top_affected_teams: [],
+      latest_analysis: null,
+    };
+  }
   return res.json();
 }
 
