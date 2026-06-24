@@ -15,13 +15,8 @@ export function AnalysisList({ analyses }: Props) {
         </div>
         <h3 className="font-display text-xl text-stone-900">No pipeline failures yet</h3>
         <p className="text-stone-500 mt-2 max-w-md mx-auto text-sm leading-relaxed">
-          In production, Orbit Rover comments on GitLab merge requests when CI fails. For a local demo, run{" "}
-          <code className="text-xs bg-stone-100 px-1.5 py-0.5 rounded font-mono">scripts/demo.ps1</code> or
-          complete setup on the{" "}
-          <Link href="/auth" className="text-orbit-600 hover:underline font-medium">
-            Auth tab
-          </Link>
-          .
+          In production, Orbit Rover comments on GitLab merge requests when CI fails. For a local demo,
+          run <code className="text-xs bg-stone-100 px-1.5 py-0.5 rounded font-mono">scripts/demo.ps1</code>.
         </p>
       </div>
     );

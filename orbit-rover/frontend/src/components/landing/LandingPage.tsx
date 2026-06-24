@@ -127,11 +127,10 @@ export function LandingPage() {
         <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
           <div className="card-surface p-10 sm:p-14 text-center">
             <h2 className="font-display text-3xl text-stone-900 mb-4">
-              Register through the <em className="italic">Auth</em> tab
+              Ready to <em className="italic">sign in?</em>
             </h2>
             <p className="text-stone-500 max-w-lg mx-auto mb-8">
-              Sign in with GitLab to access the manager dashboard. First-time setup takes about 10
-              minutes — we walk you through OAuth, webhooks, and Render env vars.
+              Use your GitLab account to access the manager dashboard.
             </p>
             <Link href="/auth" className="btn-gitlab px-8 py-3">
               Open Auth → Sign in with GitLab

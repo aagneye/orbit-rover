@@ -2,27 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { clearSessionToken, fetchHealth, fetchMe, loginUrl, logoutUrl, type UserInfo } from "@/lib/api";
+import { clearSessionToken, fetchMe, loginUrl, logoutUrl, type UserInfo } from "@/lib/api";
 
 export function AuthBar() {
   const [user, setUser] = useState<UserInfo | null>(null);
-  const [oauthReady, setOauthReady] = useState(true);
-  const [authEnabled, setAuthEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetchMe().then(setUser).catch(() => setUser(null)),
-      fetchHealth()
-        .then((h) => {
-          setOauthReady(h.oauth_configured !== false);
-          setAuthEnabled(h.auth_enabled !== false);
-        })
-        .catch(() => {
-          setOauthReady(false);
-          setAuthEnabled(false);
-        }),
-    ]).finally(() => setLoading(false));
+    fetchMe()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -31,22 +21,8 @@ export function AuthBar() {
 
   if (user?.auth_disabled) {
     return (
-      <Link
-        href="/auth"
-        className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-2 hover:bg-amber-100"
-      >
-        Auth off — fix on Auth tab →
-      </Link>
-    );
-  }
-
-  if (!oauthReady || !authEnabled) {
-    return (
-      <Link
-        href="/auth"
-        className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-2 hover:bg-amber-100 max-w-xs text-center"
-      >
-        GitLab OAuth setup required →
+      <Link href="/auth" className="btn-secondary text-xs px-3 py-2">
+        Sign in
       </Link>
     );
   }

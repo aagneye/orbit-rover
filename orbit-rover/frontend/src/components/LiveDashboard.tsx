@@ -4,7 +4,6 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AnalysisList } from "@/components/AnalysisList";
 import { AuthBar } from "@/components/AuthBar";
-import { GitLabSetupGuide } from "@/components/auth/GitLabSetupGuide";
 import { ManagerDashboard } from "@/components/ManagerDashboard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
@@ -117,15 +116,11 @@ function DashboardInner() {
           </p>
           {error === "offline" && (
             <div className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-              <strong>Backend offline.</strong> Wake the API at{" "}
+              <strong>Backend offline.</strong> The API at{" "}
               <a href={getApiUrl()} className="underline font-mono text-xs">
                 {getApiUrl()}
               </a>{" "}
-              or complete GitLab setup on the{" "}
-              <Link href="/auth" className="underline font-medium">
-                Auth tab
-              </Link>
-              .
+              is not reachable.
             </div>
           )}
         </header>
@@ -141,11 +136,6 @@ function DashboardInner() {
           </section>
           <aside className="lg:col-span-2 space-y-6">
             <ManagerDashboard stats={stats} />
-            {error === "offline" && (
-              <div className="hidden lg:block">
-                <GitLabSetupGuide compact />
-              </div>
-            )}
           </aside>
         </div>
       </main>
