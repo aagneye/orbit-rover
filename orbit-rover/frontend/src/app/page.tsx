@@ -1,5 +1,5 @@
-import { LiveDashboard } from "@/components/LiveDashboard";
+import { LandingPage } from "@/components/landing/LandingPage";
 
 export default function HomePage() {
-  return <LiveDashboard />;
+  return <LandingPage />;
 }
