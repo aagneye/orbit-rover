@@ -1,61 +1,75 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { clearSessionToken, fetchHealth, fetchMe, loginUrl, logoutUrl, type UserInfo } from "@/lib/api";
 
 export function AuthBar() {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [oauthReady, setOauthReady] = useState(true);
+  const [authEnabled, setAuthEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       fetchMe().then(setUser).catch(() => setUser(null)),
       fetchHealth()
-        .then((h) => setOauthReady(h.oauth_configured !== false))
-        .catch(() => setOauthReady(false)),
+        .then((h) => {
+          setOauthReady(h.oauth_configured !== false);
+          setAuthEnabled(h.auth_enabled !== false);
+        })
+        .catch(() => {
+          setOauthReady(false);
+          setAuthEnabled(false);
+        }),
     ]).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return null;
+  if (loading) {
+    return <div className="w-24 h-9 rounded-full bg-stone-100 animate-pulse" />;
+  }
 
   if (user?.auth_disabled) {
     return (
-      <div className="text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-        Auth off on API — redeploy Render backend after latest push
-      </div>
+      <Link
+        href="/auth"
+        className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-2 hover:bg-amber-100"
+      >
+        Auth off — fix on Auth tab →
+      </Link>
     );
   }
 
-  if (!oauthReady) {
+  if (!oauthReady || !authEnabled) {
     return (
-      <div className="text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 max-w-xs">
-        GitLab OAuth not configured on API — set{" "}
-        <code className="text-amber-300">GITLAB_OAUTH_CLIENT_ID</code> and{" "}
-        <code className="text-amber-300">GITLAB_OAUTH_CLIENT_SECRET</code> in Render
-      </div>
+      <Link
+        href="/auth"
+        className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-2 hover:bg-amber-100 max-w-xs text-center"
+      >
+        GitLab OAuth setup required →
+      </Link>
     );
   }
 
   if (!user) {
     return (
-      <a
-        href={loginUrl()}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FC6D26] hover:bg-[#e24329] text-white text-sm font-medium transition-colors"
-      >
+      <a href={loginUrl()} className="btn-gitlab">
         <GitLabIcon />
-        Sign in with GitLab
+        Sign in
       </a>
     );
   }
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm text-slate-400">@{user.username}</span>
+      <div className="text-right hidden sm:block">
+        <div className="text-sm font-medium text-stone-900">@{user.username}</div>
+        <div className="text-xs text-stone-400">{user.name}</div>
+      </div>
       <a
         href={logoutUrl()}
         onClick={() => clearSessionToken()}
-        className="text-xs text-slate-500 hover:text-slate-300"
+        className="text-xs text-stone-500 hover:text-stone-800 underline"
       >
         Sign out
       </a>
