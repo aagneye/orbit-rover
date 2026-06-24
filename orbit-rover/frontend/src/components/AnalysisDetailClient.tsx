@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnalysisDetailView } from "@/components/AnalysisDetail";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteNav } from "@/components/site/SiteNav";
 import { fetchAnalysis, loginUrl, type AnalysisDetail } from "@/lib/api";
 
 export function AnalysisDetailClient({ id }: { id: string }) {
@@ -17,29 +19,49 @@ export function AnalysisDetailClient({ id }: { id: string }) {
 
   if (error === "auth") {
     return (
-      <main className="max-w-lg mx-auto px-4 py-24 text-center">
-        <h1 className="text-xl font-semibold text-slate-200 mb-2">Sign in required</h1>
-        <a href={loginUrl()} className="px-4 py-2 rounded-lg bg-[#FC6D26] text-white font-medium">
-          Sign in with GitLab
-        </a>
-      </main>
+      <div className="flex flex-col min-h-screen bg-surface">
+        <SiteNav active="dashboard" />
+        <main className="flex-1 max-w-lg mx-auto px-4 py-24 text-center">
+          <h1 className="font-display text-2xl text-stone-900 mb-3">Sign in required</h1>
+          <p className="text-stone-500 mb-6 text-sm">Use the Auth tab to register with GitLab first.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/auth" className="btn-gitlab">
+              Open Auth tab
+            </Link>
+            <a href={loginUrl()} className="btn-secondary">
+              Sign in with GitLab
+            </a>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
     );
   }
 
   if (error === "notfound" || !analysis) {
     return (
-      <main className="max-w-lg mx-auto px-4 py-24 text-center text-slate-400">
-        {error ? "Analysis not found" : "Loading…"}
-        <div className="mt-4">
-          <Link href="/" className="text-orbit-400 hover:underline">← Dashboard</Link>
-        </div>
-      </main>
+      <div className="flex flex-col min-h-screen bg-surface">
+        <SiteNav active="dashboard" />
+        <main className="flex-1 max-w-lg mx-auto px-4 py-24 text-center text-stone-500">
+          {error ? "Analysis not found" : "Loading…"}
+          <div className="mt-4">
+            <Link href="/dashboard" className="text-orbit-600 hover:underline font-medium">
+              ← Dashboard
+            </Link>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
     );
   }
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-10">
-      <AnalysisDetailView analysis={analysis} />
-    </main>
+    <div className="flex flex-col min-h-screen bg-surface">
+      <SiteNav active="dashboard" />
+      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-10 w-full">
+        <AnalysisDetailView analysis={analysis} />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
