@@ -14,7 +14,7 @@ No new tabs. No manual log diving. Developers stay in GitLab; managers get a liv
 | **Manager dashboard** | [**orbit-rover.vercel.app/dashboard**](https://orbit-rover.vercel.app/dashboard) |
 | **Sign in (GitLab OAuth)** | [**orbit-rover.vercel.app/auth**](https://orbit-rover.vercel.app/auth) |
 | **API health** | [**orbit-rover-api.onrender.com/api/health**](https://orbit-rover-api.onrender.com/api/health) |
-| **Source (GitLab)** | [**gitlab.com/aagneye-group/orbit-rover**](https://gitlab.com/aagneye-group/orbit-rover) |
+| **Source (GitLab)** | [**gitlab.com/aagneye/orbit-rover**](https://gitlab.com/aagneye/orbit-rover) |
 | **Source (GitHub)** | [**github.com/aagneye/orbit-rover**](https://github.com/aagneye/orbit-rover) |
 
 Open the **dashboard** — you should see pipeline analyses, confidence scores, affected teams, and time saved. Sign in with GitLab to access manager view.
