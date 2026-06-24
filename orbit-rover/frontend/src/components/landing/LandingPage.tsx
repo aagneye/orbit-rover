@@ -71,7 +71,7 @@ export function LandingPage() {
               </div>
             </div>
             <div className="relative aspect-square max-w-md mx-auto lg:ml-auto w-full">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-violet-500 via-orange-400 to-rose-500 opacity-90 hero-noise shadow-hero" />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-violet-400 via-sky-300 to-blue-500 opacity-90 hero-noise shadow-hero" />
               <div className="absolute inset-4 rounded-2xl border border-white/30 backdrop-blur-sm bg-white/10 flex items-center justify-center">
                 <div className="text-center text-white p-6">
                   <div className="text-5xl mb-4">🛰️</div>
