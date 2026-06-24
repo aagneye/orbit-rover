@@ -13,7 +13,7 @@ function AuthCallbackInner() {
     if (session) {
       setSessionToken(session);
     }
-    router.replace("/");
+    router.replace("/dashboard");
   }, [params, router]);
 
   return (
