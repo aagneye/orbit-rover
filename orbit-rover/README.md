@@ -34,7 +34,6 @@ The engineering manager dashboard (secondary view) tracks analyses run and estim
 |-----|----------------|
 | [Architecture](../docs/ARCHITECTURE.md) | System design, components, API, deployment overview |
 | [Live setup](../docs/LIVE_SETUP.md) | Step-by-step deploy on Render + Vercel + GitLab |
-| [AI Catalog submission](../docs/AI_CATALOG_SUBMISSION.md) | Publish agent for hackathon / showcase track |
 
 ## Quick start (local)
 
