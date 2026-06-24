@@ -183,6 +183,14 @@ NEXT_PUBLIC_API_URL=https://orbit-rover-api.onrender.com
 
 4. Deploy → copy URL e.g. `https://orbit-rover.vercel.app`
 
+   **Site routes after deploy:**
+
+   | URL | Purpose |
+   |-----|---------|
+   | `https://orbit-rover.vercel.app/` | Landing page |
+   | `https://orbit-rover.vercel.app/auth` | **Auth tab** — GitLab sign-in + setup checklist |
+   | `https://orbit-rover.vercel.app/dashboard` | Manager dashboard (requires GitLab login) |
+
 5. Back on **Render** → update:
 
 ```env
@@ -212,6 +220,22 @@ Secret token = your `GITLAB_WEBHOOK_SECRET` value from Render.
 curl https://orbit-rover-api.onrender.com/api/health
 ```
 
+Expect `"auth_enabled": true` and `"oauth_configured": true` after Render env vars are set.
+
+1. Open **Auth tab**: `https://orbit-rover.vercel.app/auth` → **Sign in with GitLab**
+2. Open **Dashboard**: `https://orbit-rover.vercel.app/dashboard` → see stats and analyses
+3. Run demo webhook (below) or fail a real pipeline → MR gets Orbit Rover comment
+
+### Common GitLab errors
+
+| Symptom | Fix |
+|---------|-----|
+| Login goes to `localhost:8000` | Set `NEXT_PUBLIC_API_URL` on Vercel, redeploy |
+| `auth_enabled: false` on `/api/health` | Redeploy Render backend (auto-enables on Render) |
+| Yellow "OAuth not configured" on Auth tab | Set `GITLAB_OAUTH_CLIENT_ID` + `GITLAB_OAUTH_CLIENT_SECRET` on Render |
+| Webhook 403 | GitLab **Secret token** must match `GITLAB_WEBHOOK_SECRET` (not `whsec` signing token) |
+| Redirect URI mismatch | OAuth app must include `https://orbit-rover-api.onrender.com/auth/gitlab/callback` |
+
 ```bash
 curl -X POST https://orbit-rover-api.onrender.com/webhooks/gitlab/pipeline/sync \
   -H "Content-Type: application/json" \
@@ -219,15 +243,18 @@ curl -X POST https://orbit-rover-api.onrender.com/webhooks/gitlab/pipeline/sync 
   -d @orbit-rover/backend/fixtures/sample_pipeline_webhook.json
 ```
 
-1. Open Vercel dashboard URL → **Sign in with GitLab**
-2. See the demo analysis
-3. Fail a real pipeline → MR gets Orbit Rover comment
+Refresh `https://orbit-rover.vercel.app/dashboard` to see the demo analysis.
 
 ---
 
 ## Quick reference — copy-paste URIs
 
 ```text
+# Vercel site routes (production)
+https://orbit-rover.vercel.app/
+https://orbit-rover.vercel.app/auth
+https://orbit-rover.vercel.app/dashboard
+
 # GitLab OAuth Redirect URIs
 http://localhost:8000/auth/gitlab/callback
 https://orbit-rover-api.onrender.com/auth/gitlab/callback

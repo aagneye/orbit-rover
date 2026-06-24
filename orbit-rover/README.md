@@ -2,38 +2,40 @@
 
 **AI-powered GitLab pipeline root-cause analysis agent.**
 
-When your CI pipeline fails, Orbit Rover automatically investigates — pulling pipeline logs, merge request context, recent commits, and Orbit knowledge graph data — then posts a structured root-cause analysis as a comment on your merge request.
+When a CI pipeline fails, someone on your team usually spends the next hour (or three) digging through job logs, recent commits, dependency changes, and Slack threads to figure out what broke. Orbit Rover does that investigation automatically and posts a clear, structured diagnosis as a comment on the merge request — right where developers already work.
 
 ```
 Pipeline fails → Webhook → Collect context → Orbit graph → LLM analysis → MR comment
 ```
 
-## Architecture
+## Why this exists
 
-```
-┌─────────────┐     webhook      ┌──────────────────┐
-│   GitLab    │ ───────────────► │  FastAPI Backend │
-│  Pipelines  │                  │                  │
-└─────────────┘                  │  ┌────────────┐  │
-                                 │  │  GitLab    │  │──► Logs, MR, Commits
-┌─────────────┐                  │  │  Service   │  │
-│ GitLab Orbit│ ◄─────────────── │  └────────────┘  │
-│   Graph API │                  │  ┌────────────┐  │
-└─────────────┘                  │  │  Orbit     │  │──► Deps, Blast Radius
-                                 │  │  Service   │  │
-┌─────────────┐                  │  └────────────┘  │
-│ OpenAI /    │ ◄─────────────── │  ┌────────────┐  │     ┌──────────────┐
-│ Claude /    │                  │  │  LLM       │  │────►│  MR Comment  │
-│ Ollama      │                  │  │  Service   │  │     └──────────────┘
-└─────────────┘                  │  └────────────┘  │
-                                 └────────┬─────────┘
-                                          │
-                                 ┌────────▼─────────┐
-                                 │ Next.js Dashboard │
-                                 └──────────────────┘
-```
+Broken pipelines are expensive in two ways: they block shipping, and they steal focus. A single failed job can pull an engineer off their task for half a day of manual triage — reading traces, correlating commits, checking which services are downstream, and writing up findings for the team.
 
-## Quick Start
+Orbit Rover is built to give that time back. It connects to GitLab CI, pulls logs and MR context, queries the Orbit knowledge graph for blast radius and team ownership, and uses an LLM to produce a root-cause report with evidence and suggested fixes. The result lands in the MR as a comment, not in another tool tab.
+
+The engineering manager dashboard (secondary view) tracks analyses run and estimated time saved so teams can see the impact over time.
+
+## How it helps your team
+
+| Without Orbit Rover | With Orbit Rover |
+|---------------------|------------------|
+| Manual log diving after every red pipeline | Automatic investigation on failure |
+| Context scattered across GitLab, docs, and chat | One MR comment with cause, evidence, and fixes |
+| Repeat failures on the same root cause | Structured history in the dashboard |
+| Managers guess at CI toil | Stats on analyses and time saved |
+
+**Primary experience:** developers stay in GitLab — pipeline fails, comment appears, they act.  
+**Secondary experience:** managers and demos use the [dashboard](https://orbit-rover.vercel.app) for visibility.
+
+## Documentation
+
+| Doc | What it covers |
+|-----|----------------|
+| [Architecture](../docs/ARCHITECTURE.md) | System design, components, API, deployment overview |
+| [Live setup](../docs/LIVE_SETUP.md) | Step-by-step deploy on Render + Vercel + GitLab |
+
+## Quick start (local)
 
 ### Prerequisites
 
@@ -67,7 +69,15 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the dashboard.
+Open [http://localhost:3000](http://localhost:3000) for the landing page. Manager dashboard: `/dashboard`. GitLab setup: `/auth`.
+
+## Production URLs
+
+| Route | URL |
+|-------|-----|
+| Landing | https://orbit-rover.vercel.app/ |
+| Auth (GitLab sign-in) | https://orbit-rover.vercel.app/auth |
+| Dashboard | https://orbit-rover.vercel.app/dashboard |
 
 ### 4. Run demo (no GitLab required)
 
@@ -79,6 +89,12 @@ curl -X POST http://localhost:8000/webhooks/gitlab/pipeline/sync \
   -d @backend/fixtures/sample_pipeline_webhook.json
 ```
 
+Or on Windows:
+
+```powershell
+powershell -File scripts/demo.ps1
+```
+
 Refresh the dashboard to see the analysis.
 
 ### Docker
@@ -88,68 +104,32 @@ cp .env.example .env
 docker compose up --build
 ```
 
-## GitLab Webhook Setup
+## GitLab webhook
 
 1. Go to **Settings → Webhooks** in your GitLab project
 2. URL: `https://your-orbit-rover-host/webhooks/gitlab/pipeline`
-3. Secret token: same as `GITLAB_WEBHOOK_SECRET` in `.env`
+3. **Secret token:** same value as `GITLAB_WEBHOOK_SECRET` in `.env` (not GitLab’s signing token)
 4. Trigger: **Pipeline events**
 5. Save
 
-When a pipeline fails, Orbit Rover queues analysis in the background and posts results to the associated merge request.
+See [LIVE_SETUP.md](../docs/LIVE_SETUP.md) for production URLs and OAuth setup.
 
-## LLM Providers
+## Contributing
 
-| Provider | Config | Use Case |
-|----------|--------|----------|
-| `mock` | `LLM_PROVIDER=mock` | Demo / offline development |
-| `openai` | `OPENAI_API_KEY` + `OPENAI_MODEL=gpt-4.1` | Production |
-| `anthropic` | `ANTHROPIC_API_KEY` | Production |
-| `ollama` | `OLLAMA_BASE_URL` + `OLLAMA_MODEL` | Local LLM |
+Contributions are welcome — whether you fix a bug, improve prompts, add tests, or tighten the dashboard.
 
-## Orbit Knowledge Graph
+1. **Fork or branch** from `main` on GitLab (or `master` on GitHub).
+2. **Keep changes focused** — small merge requests are easier to review.
+3. **Use conventional commits:** `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`.
+4. **Reference issues** with `#123` in commit messages and MR descriptions when applicable.
+5. **Run checks locally** before opening an MR:
+   ```bash
+   cd backend && pip install -r requirements.txt && pytest
+   cd frontend && npm install && npm run build
+   ```
+6. **Read the architecture** before larger changes: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md).
 
-Orbit Rover queries the [GitLab Orbit API](https://docs.gitlab.com/api/orbit/) for:
-
-- Service dependency graphs
-- Blast radius / affected services
-- Team ownership
-- Related merge requests
-
-Set `ORBIT_USE_MOCK=true` (default) for demo mode with realistic mock data. Set `ORBIT_USE_MOCK=false` when Orbit is enabled on your GitLab group.
-
-## API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/webhooks/gitlab/pipeline` | Async pipeline failure webhook |
-| POST | `/webhooks/gitlab/pipeline/sync` | Sync analysis (demo/testing) |
-| GET | `/api/health` | Health check |
-| GET | `/api/analyses` | List recent analyses |
-| GET | `/api/analyses/{id}` | Analysis detail |
-| GET | `/api/stats` | Dashboard statistics |
-
-## Project Structure
-
-```
-orbit-rover/
-├── backend/
-│   ├── app/
-│   │   ├── api/           # REST routes
-│   │   ├── models/        # Pydantic + SQLAlchemy models
-│   │   ├── prompts/       # LLM prompt templates
-│   │   ├── services/      # GitLab, Orbit, LLM, Analyzer
-│   │   ├── utils/         # Helpers, markdown formatter
-│   │   ├── webhooks/      # Pipeline webhook handler
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   └── main.py
-│   ├── fixtures/          # Sample webhook payloads
-│   └── requirements.txt
-├── frontend/              # Next.js dashboard
-├── docker-compose.yml
-└── .env.example
-```
+Ideas that fit the project well: better LLM prompts, real Orbit graph integration, webhook signing-token support, more GitLab event types, and CI pipeline fixtures for common failure modes.
 
 ## License
 

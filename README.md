@@ -54,46 +54,13 @@ GitLab shows an SSO warning — you need a **Personal Access Token** (scope: `wr
 
 GitHub: use a **Personal Access Token** or `gh auth login`.
 
-## High-Level Architecture
+## Documentation
 
-```
-                   ┌─────────────────────────────┐
-                   │        Developer            │
-                   └─────────────┬───────────────┘
-                                 │
-                           Push Code / MR
-                                 │
-                                 ▼
-                   ┌─────────────────────────────┐
-                   │         GitLab              │
-                   │  Pipeline + Merge Request   │
-                   └─────────────┬───────────────┘
-                                 │
-                    Pipeline Failed Webhook
-                                 │
-                                 ▼
-              ┌─────────────────────────────────────┐
-              │       Orbit Rover Backend        │
-              │           (FastAPI)                  │
-              └─────────────────────────────────────┘
-                 │               │               │
-                 │               │               │
-                 ▼               ▼               ▼
-        GitLab API        GitLab Orbit API     LLM
-      (logs, commits)    (dependency graph) (GPT/Claude)
-                 │               │               │
-                 └───────────────┴───────────────┘
-                                 │
-                    AI Root Cause Analysis
-                                 │
-                                 ▼
-               ┌─────────────────────────────┐
-               │  Post Comment to GitLab MR  │
-               └─────────────────────────────┘
-                                 │
-                                 ▼
-                     Developer sees diagnosis
-```
+| Doc | Description |
+|-----|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | System design, components, API, deployment |
+| [Live setup](docs/LIVE_SETUP.md) | Deploy on Render + Vercel + GitLab (beginner-friendly) |
+| [App README](orbit-rover/README.md) | Local quick start and contributing |
 
 ## Project Structure
 
@@ -158,7 +125,7 @@ The developer **never leaves GitLab**:
 
 ## Secondary Experience (Dashboard)
 
-Engineering manager view at `http://localhost:3000` — time saved, top teams, recent failures. For demos and ops visibility only.
+Engineering manager view at [orbit-rover.vercel.app/dashboard](https://orbit-rover.vercel.app/dashboard) — register via the [Auth tab](https://orbit-rover.vercel.app/auth). For demos and ops visibility only.
 
 ## Quick Start
 
