@@ -1,0 +1,24 @@
+{
+  "display_name": "Orbit Rover Pipeline Analyst",
+  "slug_hint": "orbit-rover-pipeline-analyst",
+  "description": "Investigates failed GitLab CI/CD pipelines — root cause, blast radius, and fix recommendations. Companion to the Orbit Rover open-source agent that auto-posts analysis on merge requests.",
+  "visibility": "public",
+  "managing_project": "aagneye-group/orbit-rover",
+  "suggested_tools": [
+    "Get pipeline job details / logs (if available in your GitLab tier)",
+    "Read file / repository context",
+    "Create issue (optional — for 'Create fix issue' workflows)"
+  ],
+  "example_user_prompts": [
+    "Our pipeline #4821 failed on the integration-test job. MR !42 — what is the most likely root cause?",
+    "The deploy stage failed with 'connection refused' to auth-service. What should we check first?",
+    "Summarize blast radius if auth protobuf field user_token was renamed to auth_token.",
+    "Given this job log snippet, suggest three concrete fixes ordered by priority: [paste log]"
+  ],
+  "links": {
+    "repository": "https://gitlab.com/aagneye-group/orbit-rover",
+    "dashboard": "https://orbit-rover.vercel.app",
+    "api_health": "https://orbit-rover-api.onrender.com/api/health",
+    "submission_url_pattern": "https://gitlab.com/explore/ai-catalog/agents/{AGENT_ID}"
+  }
+}
